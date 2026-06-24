@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite'
+
 export default defineConfig({
-  base: "./",
+  server: {
+    port: 5173,
+    open: true
+  },
   build: {
+    outDir: 'dist',
+    minify: 'terser',
     rollupOptions: {
       input: {
-        index: "index.html",
-        oyuncular: "oyuncular.html",
-        teknikDirektorler: "teknik-direktorler.html"
+        main: './index.html',
+        oyuncular: './oyuncular.html',
+        coaches: './teknik-direktorler.html'
       }
     }
   }
