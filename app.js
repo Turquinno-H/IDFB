@@ -1,16 +1,101 @@
 import { PLAYERS, COACHES } from './data.js';
 
-async function fetchLiveData() {
+const POS_TR = {
+  GOALKEEPER: 'Kaleci',
+  DEFENDER:   'Defans',
+  MIDFIELDER: 'Orta Saha',
+  FORWARD:    'Forvet',
+  ATTACKER:   'Forvet',
+};
+
+async function fetchLiveData(competition = 'PL') {
   try {
-    const res = await fetch('/.netlify/functions/getPlayers');
+    const res = await fetch(`/.netlify/functions/getPlayers?competition=${competition}`);
     if (!res.ok) throw new Error(`API ${res.status}`);
-    const players = await res.json();
-    console.log('[IDFB API] Canlı PL oyuncuları:', players.length, players);
-    return players;
+    const json = await res.json();
+    console.log(`[IDFB API] ${json.competition} (${json.season}): ${json.total} oyuncu`);
+    return json;
   } catch (err) {
-    console.warn('[IDFB API] Bağlantı hatası, statik veri kullanılıyor:', err.message);
+    console.warn('[IDFB API] Bağlantı hatası:', err.message);
     return null;
   }
+}
+
+function renderApiSection(json) {
+  const section = document.getElementById('apiSection');
+  if (!section) return;
+
+  if (!json || !json.players?.length) {
+    section.innerHTML = '';
+    return;
+  }
+
+  const { competition, season, players } = json;
+
+  section.innerHTML = `
+    <div class="sec-label">
+      ⚡ ${competition}${season ? ' ' + season : ''} — Canlı Kadro
+      <span style="font-weight:500;font-size:9px;color:var(--t3);letter-spacing:0">${players.length} oyuncu</span>
+    </div>
+    <div class="card-grid" id="apiCardGrid"></div>`;
+
+  const grid = document.getElementById('apiCardGrid');
+  players.forEach(p => {
+    const lastName = p.name.split(' ').pop();
+    const pos = POS_TR[p.position] || p.position || 'Oyuncu';
+    const d = document.createElement('div');
+    d.className = 'pc';
+    d.onclick = () => showApiPlayer(p);
+    d.innerHTML = `
+      <div class="pc-cat">${pos}</div>
+      <div class="pc-nick">${lastName}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:8px;font-weight:500">${p.name}</div>
+      <div style="font-size:10px;color:var(--gold);margin-top:2px">${p.teamShort}</div>`;
+    grid.appendChild(d);
+  });
+}
+
+function showApiPlayer(p) {
+  const pos   = POS_TR[p.position] || p.position || '—';
+  const age   = p.age ? `${p.age} yaş` : '—';
+  const dob   = p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('tr-TR') : '—';
+
+  document.getElementById('homeView').classList.remove('show');
+  const pv = document.getElementById('profileView');
+  pv.classList.add('show');
+  document.getElementById('backLabel').textContent = 'Oyunculara dön';
+
+  document.getElementById('scoutHero').innerHTML = `
+    <div class="scout-hero-main" style="padding-bottom:28px">
+      <div class="scout-avatar-col">
+        <div class="scout-avatar" style="background:#1a1a1a;font-size:42px">
+          ${p.teamCrest ? `<img src="${p.teamCrest}" style="width:60px;height:60px;object-fit:contain" onerror="this.replaceWith('⚽')">` : '⚽'}
+        </div>
+        <div class="scout-overall" style="font-size:11px;font-weight:800;color:#000;text-align:center;padding:4px">
+          ${pos.slice(0,3).toUpperCase()}
+        </div>
+      </div>
+      <div class="scout-info-col">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+          ${p.league}
+        </div>
+        <div class="scout-name">${p.name}</div>
+        <div class="scout-role">${p.team} · <span class="hl">${pos}</span></div>
+        <div class="scout-kpis" style="margin-top:14px">
+          <div class="scout-kpi-pill"><i class="ti ti-flag"></i>${p.nationality || '—'}</div>
+          <div class="scout-kpi-pill"><i class="ti ti-cake"></i>${age} (${dob})</div>
+          <div class="scout-kpi-pill"><i class="ti ti-shirt"></i>${p.teamShort}</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('scoutStatsBar').innerHTML = '';
+  document.getElementById('scoutAiBanner').innerHTML = '';
+  document.getElementById('stabs').innerHTML = '';
+  document.getElementById('pcontent').innerHTML = `
+    <div class="card" style="color:var(--t3);font-size:13px;text-align:center;padding:32px">
+      Detaylı profil için oyuncuyu <strong style="color:var(--t1)">data.js</strong>'e ekle.
+    </div>`;
 }
 
 const PAGE = document.body.dataset.page || 'home';
@@ -403,7 +488,9 @@ function renderC(p, idx, c) {
 
 /* ── INIT ── */
 applyFilters();
-fetchLiveData();
+if (PAGE === 'players') {
+  fetchLiveData('PL').then(renderApiSection);
+}
 
 /* ── Global helpers (HTML onclick= erişimi için) ── */
 window.filterByLeague = filterByLeague;
