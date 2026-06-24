@@ -1,11 +1,6 @@
 [build]
-  command   = "npm run build"
-  publish   = "dist"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+  command = ""
+  publish = "."
 
 [[headers]]
   for = "/assets/*"
