@@ -1,5 +1,3 @@
-const API_KEY = '75fa0bed2edc4bb4afc4bf838a523d53';
-
 const COMPETITIONS = [
   { code: 'PL',  name: 'Premier Lig' },
   { code: 'SA',  name: 'Serie A'     },
@@ -10,6 +8,16 @@ const COMPETITIONS = [
 ];
 
 export const handler = async (event) => {
+  const API_KEY = process.env.FOOTBALL_API_KEY;
+
+  if (!API_KEY) {
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'API key not configured' }),
+    };
+  }
+
   const code = (event.queryStringParameters?.competition || 'PL').toUpperCase();
   const comp = COMPETITIONS.find(c => c.code === code) || { code, name: code };
 
