@@ -6,7 +6,7 @@
     "dev": "vite",
     "server": "node server.js",
     "start": "node server.js",
-    "build": "vite build",
+    "build": "vite build && copy oyuncular.html dist/ && copy teknik-direktorler.html dist/",
     "preview": "vite preview"
   },
   "dependencies": {
