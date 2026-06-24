@@ -1,16 +1,12 @@
 import { PLAYERS, COACHES } from './data.js';
 
-const FOOTBALL_API_KEY = '75fa0bed2edc4bb4afc4bf838a523d53';
-
 async function fetchLiveData() {
   try {
-    const res = await fetch('https://api.football-data.org/v4/competitions/PL/players', {
-      headers: { 'X-Auth-Token': FOOTBALL_API_KEY }
-    });
+    const res = await fetch('/.netlify/functions/getPlayers');
     if (!res.ok) throw new Error(`API ${res.status}`);
-    const data = await res.json();
-    console.log('[IDFB API] Canlı veri:', data);
-    return data;
+    const players = await res.json();
+    console.log('[IDFB API] Canlı PL oyuncuları:', players.length, players);
+    return players;
   } catch (err) {
     console.warn('[IDFB API] Bağlantı hatası, statik veri kullanılıyor:', err.message);
     return null;
