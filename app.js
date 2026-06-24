@@ -1,5 +1,22 @@
 import { PLAYERS, COACHES } from './data.js';
 
+const FOOTBALL_API_KEY = '75fa0bed2edc4bb4afc4bf838a523d53';
+
+async function fetchLiveData() {
+  try {
+    const res = await fetch('https://api.football-data.org/v4/competitions/PL/players', {
+      headers: { 'X-Auth-Token': FOOTBALL_API_KEY }
+    });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+    console.log('[IDFB API] Canlı veri:', data);
+    return data;
+  } catch (err) {
+    console.warn('[IDFB API] Bağlantı hatası, statik veri kullanılıyor:', err.message);
+    return null;
+  }
+}
+
 const PAGE = document.body.dataset.page || 'home';
 let currentLeague = 'all';
 let currentData = null;
@@ -390,6 +407,7 @@ function renderC(p, idx, c) {
 
 /* ── INIT ── */
 applyFilters();
+fetchLiveData();
 
 /* ── Global helpers (HTML onclick= erişimi için) ── */
 window.filterByLeague = filterByLeague;
