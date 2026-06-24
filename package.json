@@ -1,0 +1,21 @@
+{
+  "name": "idfb",
+  "version": "1.0.0",
+  "description": "International Database of Football",
+  "scripts": {
+    "dev": "vite",
+    "server": "node server.js",
+    "start": "node server.js",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
