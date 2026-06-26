@@ -718,6 +718,36 @@ body {
   .radar-wrap { height:220px; }
 }
 
+/* ── Season Table ── */
+.season-table { display:flex; flex-direction:column; gap:2px; }
+.season-row {
+  display:grid;
+  grid-template-columns: 80px 1fr 44px 44px 44px 44px;
+  gap:8px; padding:8px 12px;
+  border-radius:4px; font-size:13px; color:#aaa;
+  border-bottom:1px solid #1a1a1a;
+}
+.season-head {
+  font-size:11px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:#555; border-bottom:1px solid #2a2a2a;
+}
+.season-best { background:#1a1500; border-color:#F5C51844; color:#fff; }
+.season-best .season-g { color:#F5C518; font-weight:800; }
+.season-g { color:#F5C518; font-weight:700; }
+.season-a { color:#4d94ff; font-weight:700; }
+
+/* ── National Team ── */
+.nt-kpis {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(90px,1fr));
+  gap:12px; padding:8px 0;
+}
+.nt-kpi { text-align:center; padding:12px 8px; background:#111; border-radius:6px; border:1px solid #222; }
+.nt-kpi-val { font-size:22px; font-weight:900; color:#fff; line-height:1; }
+.nt-kpi-lbl { font-size:11px; color:#555; margin-top:4px; text-transform:uppercase; letter-spacing:.06em; }
+.nt-result { font-size:12px; }
+.result-gold { color:#F5C518; font-weight:700; }
+.nt-result em { color:#888; font-style:normal; font-size:11px; }
+
 /* ── Print / PDF Export ── */
 @media print {
   .topnav, .back-btn, .scout-pdf-btn, .stabs,

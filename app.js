@@ -253,7 +253,7 @@ function exportPDF() {
   window.print();
 }
 
-const P_TABS = ['Genel Bakış', 'Kariyer', 'Kimya', 'Kupa Dolabı', 'Dönüm Noktaları'];
+const P_TABS = ['Genel Bakış', 'Kariyer', 'Kimya', 'Kupa Dolabı', 'Dönüm Noktaları', 'Sezon Performans', 'Ulusal Takım'];
 const C_TABS = ['Genel Bakış', 'Formasyon & Kariyer', 'Oyuncu Kimyası', 'Kupa Dolabı'];
 
 function openProfile(p) {
@@ -536,7 +536,128 @@ function renderP(p, idx, c) {
     c.innerHTML = trophyHTML(p.trophies);
   } else if (idx === 4) {
     c.innerHTML = msHTML(p.milestones);
+  } else if (idx === 5) {
+    renderSeasonPerf(p, c);
+  } else if (idx === 6) {
+    renderNationalTeam(p, c);
   }
+}
+
+function renderSeasonPerf(p, c) {
+  const s = p.seasons || [];
+  const best = s.reduce((a, b) => (b.goals + (b.assists||0)) > (a.goals + (a.assists||0)) ? b : a, s[0] || {});
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head"><i class="ti ti-chart-bar"></i>Yıllara Göre Gol & Asist</div>
+      <div style="position:relative;width:100%;height:220px"><canvas id="seasonBarChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="ti ti-trending-up"></i>Yaş–Performans Eğrisi</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="ageCurveChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="ti ti-star"></i>En İyi Sezonlar</div>
+      <div class="season-table">
+        <div class="season-row season-head">
+          <span>Sezon</span><span>Kulüp</span><span>Yaş</span><span>Maç</span><span>Gol</span><span>Asist</span>
+        </div>
+        ${s.map(r => `
+          <div class="season-row${(r.yr === best.yr && r.club === best.club) ? ' season-best' : ''}">
+            <span>${r.yr}</span>
+            <span>${r.club}</span>
+            <span>${r.age}</span>
+            <span>${r.apps}</span>
+            <span class="season-g">${r.goals}</span>
+            <span class="season-a">${r.assists ?? '—'}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  const labels = s.map(r => r.yr);
+  const goals   = s.map(r => r.goals);
+  const assists = s.map(r => r.assists ?? 0);
+  const ratings = s.map(r => r.rating ?? 0);
+
+  new Chart(document.getElementById('seasonBarChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Gol', data: goals,   backgroundColor: '#F5C518cc', borderRadius: 4 },
+        { label: 'Asist', data: assists, backgroundColor: '#003087aa', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#aaa', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1e1e1e' } },
+        y: { ticks: { color: '#666' }, grid: { color: '#1e1e1e' }, beginAtZero: true }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('ageCurveChart'), {
+    type: 'line',
+    data: {
+      labels: s.map(r => `${r.age}`),
+      datasets: [{
+        label: 'Performans Puanı',
+        data: ratings,
+        borderColor: '#F5C518',
+        backgroundColor: 'rgba(245,197,24,0.08)',
+        tension: 0.4, fill: true, pointRadius: 4,
+        pointBackgroundColor: '#F5C518'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#aaa', font: { size: 11 } } } },
+      scales: {
+        x: { title: { display: true, text: 'Yaş', color: '#555' }, ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1e1e1e' } },
+        y: { min: 0, max: 10, ticks: { color: '#666' }, grid: { color: '#1e1e1e' } }
+      }
+    }
+  });
+}
+
+function renderNationalTeam(p, c) {
+  const nt = p.nationalTeam || {};
+  const tours = nt.tournaments || [];
+  const ratio = nt.caps ? (nt.goals / nt.caps).toFixed(2) : '—';
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head"><i class="ti ti-flag"></i>Millî Takım İstatistikleri</div>
+      <div class="nt-kpis">
+        <div class="nt-kpi"><div class="nt-kpi-val">${nt.caps ?? '—'}</div><div class="nt-kpi-lbl">Kap</div></div>
+        <div class="nt-kpi"><div class="nt-kpi-val" style="color:#F5C518">${nt.goals ?? '—'}</div><div class="nt-kpi-lbl">Gol</div></div>
+        <div class="nt-kpi"><div class="nt-kpi-val" style="color:#003087">${nt.assists ?? '—'}</div><div class="nt-kpi-lbl">Asist</div></div>
+        <div class="nt-kpi"><div class="nt-kpi-val">${ratio}</div><div class="nt-kpi-lbl">Gol/Maç</div></div>
+        <div class="nt-kpi"><div class="nt-kpi-val">${nt.debut ?? '—'}</div><div class="nt-kpi-lbl">İlk Maç</div></div>
+        <div class="nt-kpi"><div class="nt-kpi-val">${nt.lastMatch ?? '—'}</div><div class="nt-kpi-lbl">Son Maç</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="ti ti-world"></i>Büyük Turnuvalar</div>
+      <div class="season-table">
+        <div class="season-row season-head">
+          <span>Turnuva</span><span>Yıl</span><span>Maç</span><span>Gol</span><span>Asist</span><span>Sonuç</span>
+        </div>
+        ${tours.map(t => `
+          <div class="season-row${t.champion ? ' season-best' : ''}">
+            <span>${t.name}</span>
+            <span>${t.yr}</span>
+            <span>${t.apps}</span>
+            <span class="season-g">${t.goals}</span>
+            <span class="season-a">${t.assists ?? '—'}</span>
+            <span class="nt-result ${t.champion ? 'result-gold' : ''}">${t.result}${t.award ? ` <em>(${t.award})</em>` : ''}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><i class="ti ti-award"></i>En İyi Performanslar</div>
+      <div class="tl">${tlHTML(nt.bestPerfs || [])}</div>
+    </div>`;
 }
 
 /* ── COACH TABS ── */
