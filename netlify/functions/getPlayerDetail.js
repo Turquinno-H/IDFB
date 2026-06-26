@@ -2,8 +2,7 @@ import pg from 'pg';
 
 const { Client } = pg;
 
-const API_HOST = 'api-football-v1.p.rapidapi.com';
-const API_BASE = 'https://api-football-v1.p.rapidapi.com/v3';
+const API_BASE = 'https://v3.football.api-sports.io';
 const CACHE_HOURS = 24;
 
 function currentSeason() {
@@ -60,10 +59,7 @@ async function fetchFromApiFootball(name, apiKey) {
   const url = `${API_BASE}/players?search=${encodeURIComponent(name)}&season=${season}`;
 
   const res = await fetch(url, {
-    headers: {
-      'x-rapidapi-key':  apiKey,
-      'x-rapidapi-host': API_HOST,
-    },
+    headers: { 'x-apisports-key': apiKey },
   });
 
   if (!res.ok) throw new Error(`API-Football ${res.status}`);
